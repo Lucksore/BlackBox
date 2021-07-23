@@ -57,7 +57,6 @@ namespace BlackBox
             }
         }
 
-<<<<<<< HEAD
         static void UpdateUserList()
         {
             if (!File.Exists(CurrentUser)) File.WriteAllText(CurrentUser, "");
@@ -69,11 +68,6 @@ namespace BlackBox
         static void RegisterFirst()
         {
             Console.WriteLine($"\n{Padding}No users. Register a new one?");
-=======
-        static void RegisterFirst()
-        {
-            Console.WriteLine($"{Padding}No users. Register a new one?");
->>>>>>> 21ed30f62eff4ebd2961517242b21aa07ae0723e
             string answer = VerticalSelectMenu(ShortAnswers, 4);
             if (answer == Answers.ShortAnswers[0]) RegisterNew();
             else Environment.Exit(0);
@@ -86,10 +80,7 @@ namespace BlackBox
             string password = "";
             while (login == "" || password == "")
             {
-<<<<<<< HEAD
                 Console.Clear();
-=======
->>>>>>> 21ed30f62eff4ebd2961517242b21aa07ae0723e
                 Console.WriteLine();
                 login = ConsoleLoginForm("Login: ", LoginLen, '_', PaddingInt);
                 password = ConsoleLoginForm("Password: ", PasswordLen, '_', PaddingInt);
@@ -151,17 +142,9 @@ namespace BlackBox
         }
 
         static void UserInfoMenu() {
-<<<<<<< HEAD
             
             Des.SetKey(CurrentUser);
             UpdateUserList();
-=======
-            if (!File.Exists(CurrentUser)) File.WriteAllText(CurrentUser, "");
-            Des.SetKey(CurrentUser);
-            string Data = Des.DecryptFile(CurrentUser);
-            if (Data == String.Empty) UserData = new List<string>();
-            else UserData = new List<string>(Data.Split('\n'));
->>>>>>> 21ed30f62eff4ebd2961517242b21aa07ae0723e
 
             string Answer = String.Empty;
             while (true) {
@@ -173,19 +156,14 @@ namespace BlackBox
             }
         }
 
-<<<<<<< HEAD
         static void ShowData() 
         {
-=======
-        static void ShowData() {
->>>>>>> 21ed30f62eff4ebd2961517242b21aa07ae0723e
             if (UserData.Count == 0) {
                 Console.WriteLine($"\n{Padding}EMPTY.");
                 while (!SpecialKeys.Contains(Console.ReadKey(true).Key)) { }
                 Console.Clear();
             }
             else {
-<<<<<<< HEAD
                 Console.WriteLine();
                 MenuIOData(CurrentUser, Answers.Columns, ' ', PaddingInt, 1, Des);
                 Console.Clear();
@@ -216,24 +194,5 @@ namespace BlackBox
 
         }
 
-=======
-
-            }
-        }
-
-        static void AddData() {
-
-        }
-
-        static void WriteColor(string Value, ConsoleColor Color)
-        {
-            ConsoleColor OldColor = Console.ForegroundColor;
-            Console.ForegroundColor = Color;
-            Console.WriteLine(Value);
-            Console.ForegroundColor = OldColor;
-        }
-        static void WriteRed(string Value) => WriteColor(Value, ConsoleColor.Red);
-        static void WriteGreen(string Value) => WriteColor(Value, ConsoleColor.Green);
->>>>>>> 21ed30f62eff4ebd2961517242b21aa07ae0723e
     }
 }
