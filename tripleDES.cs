@@ -19,8 +19,15 @@ namespace BlackBox
         public byte[] EncryptData(byte[] Data) => des.CreateEncryptor().TransformFinalBlock(Data, 0, Data.Length);
         public byte[] DecryptData(byte[] Data) => des.CreateDecryptor().TransformFinalBlock(Data, 0, Data.Length);
         public byte[] EncryptData(string Data) => EncryptData(E.GetBytes(Data));
-        
+        public byte[] EncryptData(string[] Data)
+        {
+            string s = string.Empty;
+            for (int i = 0; i < Data.Length; i++) s += Data[i] + '\n';
+            return EncryptData(s);
+        }
         public void EncryptFile(byte[] Data, string FilePath) => File.WriteAllBytes(FilePath, EncryptData(Data));
+        public void EncryptFile(string Data, string FilePath) => File.WriteAllBytes(FilePath, EncryptData(Data));
+        public void EncryptFile(string[] Data, string FilePath) => File.WriteAllBytes(FilePath, EncryptData(Data));
         public string DecryptFile(string FilePath)
         {
             byte[] bytes = File.ReadAllBytes(FilePath);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+
 using System.Text;
 using System.Threading;
 using System.Collections;
@@ -16,9 +17,8 @@ namespace BlackBox
         static string UsersDir = "UsersDir";
         static string CurrentUser;
         static string Padding = "\t";
-        static string FileFormat = ".rr";
+        static string FileFormat = ".bin";
 
-        public static string[] ShortAnswers = new string[] { "Yes", "No" };
         static List<string> UserList;
         static List<string> UserData;
         static List<ConsoleKey> SpecialKeys = new List<ConsoleKey>() { ConsoleKey.Enter, ConsoleKey.Escape, ConsoleKey.Spacebar };
@@ -33,13 +33,12 @@ namespace BlackBox
         [STAThread]
         static void Main()
         {
+            
             Configure();
             UserSelectMenu();
             UserInfoMenu();
-            Console.WriteLine($"{Padding}BETA!");
-            Console.ReadLine();
         }
-
+        
         static void Configure()
         {
             Console.InputEncoding = Encoding.UTF8;
@@ -55,8 +54,8 @@ namespace BlackBox
                 UserList = new List<string>();
                 RegisterFirst();
             }
+            File.WriteAllText("text.txt", data);
         }
-
         static void UpdateUserList()
         {
             if (!File.Exists(CurrentUser)) File.WriteAllText(CurrentUser, "");
@@ -64,27 +63,26 @@ namespace BlackBox
             if (Data == String.Empty) UserData = new List<string>();
             else UserData = new List<string>(Data.Split('\n'));
         }
-
         static void RegisterFirst()
         {
             Console.WriteLine($"\n{Padding}No users. Register a new one?");
-            string answer = VerticalSelectMenu(ShortAnswers, 4);
+            string answer = VerticalSelectMenu(Answers.ShortAnswers, 4);
             if (answer == Answers.ShortAnswers[0]) RegisterNew();
             else Environment.Exit(0);
             
         }
-
         static void RegisterNew()
         {
-            string login = "";
-            string password = "";
-            while (login == "" || password == "")
-            {
+            Console.Clear();
+            Console.WriteLine();
+            string login = ConsoleLoginForm("Login: ", LoginLen, '_', PaddingInt);
+            string password = ConsoleLoginForm("Password: ", PasswordLen, '_', PaddingInt);
+            if (login == "" || password == "") {
+                WriteRed($"{Padding}Ivalid values.");
+                Thread.Sleep(WaitTime);
                 Console.Clear();
-                Console.WriteLine();
-                login = ConsoleLoginForm("Login: ", LoginLen, '_', PaddingInt);
-                password = ConsoleLoginForm("Password: ", PasswordLen, '_', PaddingInt);
-            }
+                return;
+            } 
             if (!UserList.Contains(login + ' ' + password)) {
                 for (int i = 0; i < UserList.Count; i++)
                     if (login == UserList[i].Split(' ')[0]) {
@@ -97,16 +95,15 @@ namespace BlackBox
                 File.WriteAllBytes(UsersFile, Des.EncryptData(Des.DecryptFile(UsersFile) + login + ' ' + password + '\n'));
                 UserList = new List<string>(Des.DecryptFile(UsersFile).Split('\n'));
                 File.WriteAllText(UsersDir + '\\' + login + FileFormat, "");
-                WriteGreen($"{Padding}New user was successfully registered");
+                WriteGreen($"{Padding}New user was successfully registered.");
                 Thread.Sleep(WaitTime);
             }
             else {
-                WriteRed($"{Padding}User with such name already exists.");
+                WriteRed($"{Padding}Such user already exists.");
                 Thread.Sleep(WaitTime);
             }
             Console.Clear();
         }
-
         static void UserSelectMenu() {
             string Answer = String.Empty;
             while (true) {
@@ -116,18 +113,15 @@ namespace BlackBox
                 if (Answer == Answers.MenuAnswers[1]) RegisterNew();
                 if (Answer == Answers.MenuAnswers[2]) Environment.Exit(0);
             } 
-            
         }
-
         static bool LogIn() {
             string login = "";
             string password = "";
-            while (login == "" && password == "") {
-                Console.Clear();
-                Console.WriteLine();
-                login = ConsoleLoginForm("Login: ", LoginLen, '_', PaddingInt);
-                password = ConsoleLoginForm("Passord: ", PasswordLen, '_', PaddingInt);    
-            }
+            Console.Clear();
+            Console.WriteLine();
+            login = ConsoleLoginForm("Login: ", LoginLen, '_', PaddingInt);
+            password = ConsoleLoginForm("Passord: ", PasswordLen, '_', PaddingInt);    
+            
             if (UserList.Contains(login + ' ' + password)) {
                 WriteGreen($"{Padding}ACCESS GRANTED");
                 CurrentUser = UsersDir + '\\' + login + FileFormat;
@@ -140,7 +134,6 @@ namespace BlackBox
             Console.Clear();
             return false;
         }
-
         static void UserInfoMenu() {
             
             Des.SetKey(CurrentUser);
@@ -152,10 +145,10 @@ namespace BlackBox
                 Answer = VerticalSelectMenu(Answers.ProfileAnswers, PaddingInt);
                 if (Answer == Answers.ProfileAnswers[0]) ShowData();
                 if (Answer == Answers.ProfileAnswers[1]) AddData();
-                if (Answer == Answers.MenuAnswers[2]) Environment.Exit(0);
+                if (Answer == Answers.ProfileAnswers[2]) SettingsMenu();
+                if (Answer == Answers.ProfileAnswers[3]) Environment.Exit(0);
             }
         }
-
         static void ShowData() 
         {
             if (UserData.Count == 0) {
@@ -166,10 +159,10 @@ namespace BlackBox
             else {
                 Console.WriteLine();
                 MenuIOData(CurrentUser, Answers.Columns, ' ', PaddingInt, 1, Des);
+                UpdateUserList();
                 Console.Clear();
             }
         }
-
         static void AddData()
         {
             Console.WriteLine();
@@ -193,6 +186,68 @@ namespace BlackBox
             }
 
         }
+        static void SettingsMenu()
+        {
+            string Answer = String.Empty;
+            bool deleted = false;
+            while (true) {
+                Console.WriteLine();
+                Answer = VerticalSelectMenu(Answers.SettingsAnswers, PaddingInt);
+                if (Answer == Answers.SettingsAnswers[0]) {
+                    deleted = DeleteUser();
+                    if (deleted) break;
+                }
+                if (Answer == Answers.SettingsAnswers[1]) ChangeWindowSize();
+                if (Answer == Answers.SettingsAnswers[2]) break;
+            }
 
+            if (deleted) UserSelectMenu();
+        }
+        static bool DeleteUser()
+        {
+            string login = "";
+            string password = "";
+            Console.Clear();
+            Console.WriteLine();
+            login = ConsoleLoginForm("Login: ", LoginLen, '_', PaddingInt);
+            password = ConsoleLoginForm("Passord: ", PasswordLen, '_', PaddingInt);
+            string info = login + ' ' + password;
+            Console.Clear();
+            if (!UserList.Contains(info)) {
+                WriteRed($"\n{Padding}Wrong login or password.");
+                Console.Clear();
+                return false;
+            }
+
+            Console.WriteLine($"\n{Padding}Delete this user?");
+            string Answer = VerticalSelectMenu(Answers.ShortAnswers, PaddingInt);
+            if (Answer == Answers.ShortAnswers[0]) {
+                Console.WriteLine();
+                WriteRed($"{Padding}User was deleted.");
+                
+                if (File.Exists(CurrentUser)) File.Delete(CurrentUser);
+                CurrentUser = String.Empty;
+                UserList.Remove(info);
+                Des.SetKey(Environment.UserName);
+                if (UserList.Count == 0) File.WriteAllText(UsersFile, "");
+                else Des.EncryptFile(UserList.ToArray(), UsersFile);
+
+                string data = Des.DecryptFile(UsersFile);
+                if (data != String.Empty) UserList = new List<string>(data.Split('\n'));
+                else UserList = new List<string>();
+                
+                Thread.Sleep(WaitTime);
+                Console.Clear();
+                return true;
+            }
+            return false;
+        }
+        static void ChangeWindowSize()
+        {
+            int value = Console.WindowWidth;
+            Console.WriteLine();
+            SetWindowSize(40, 135, 10, 100, PaddingInt);
+        }
+        
     }
 }

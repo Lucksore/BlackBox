@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
-using System.Collections.Generic;
 using static System.Windows.Forms.Clipboard;
 
 
@@ -10,50 +10,44 @@ namespace BlackBox
     static class TableMethods
     {
         static public List<ConsoleKey> SpecialKeys = new List<ConsoleKey>{ ConsoleKey.Backspace, ConsoleKey.Tab, ConsoleKey.Spacebar };
-        
-        public static string VerticalSelectMenu(string[] items, int padx = 0, string symbol = " --> ")
+
+        public static string VerticalSelectMenu(string[] Items, int LeftPadding = 0, string SelectSymbol = " --> ")
         {
             Console.CursorVisible = false;
             int[] OriginalPosition = { Console.CursorLeft, Console.CursorTop };
-
-            for (int i = 0; i < items.Length; i++)
-                if (i == 0) Console.WriteLine(new string(' ', padx) + symbol + items[i]);
-                else
-                {
+            for (int i = 0; i < Items.Length; i++)
+                if (i == 0) Console.WriteLine(new string(' ', LeftPadding) + SelectSymbol + Items[i]);
+                else {
                     Console.CursorLeft = OriginalPosition[0];
-                    Console.WriteLine(new string(' ', padx + symbol.Length) + items[i]);
+                    Console.WriteLine(new string(' ', LeftPadding + SelectSymbol.Length) + Items[i]);
                 }
             Console.CursorTop = OriginalPosition[1];
             int ElementIndex = 0;
-            while (true)
-            {
+            while (true) {
                 ConsoleKey Key = Console.ReadKey(true).Key;
-                if (Key == ConsoleKey.Enter || Key == ConsoleKey.RightArrow)
-                {
-                    Console.CursorTop = OriginalPosition[1] + items.Length;
+                if (Key == ConsoleKey.Enter || Key == ConsoleKey.RightArrow) {
+                    Console.CursorTop = OriginalPosition[1] + Items.Length;
                     Console.CursorLeft = 0;
                     Console.Clear();
-                    return items[ElementIndex];
+                    return Items[ElementIndex];
                 }
 
-                if ((Key == ConsoleKey.S || Key == ConsoleKey.DownArrow) && ElementIndex + 1 < items.Length)
-                {
+                if ((Key == ConsoleKey.S || Key == ConsoleKey.DownArrow) && ElementIndex + 1 < Items.Length) {
                     Console.CursorLeft = OriginalPosition[0];
-                    Console.Write(new string(' ', padx + symbol.Length) + items[ElementIndex]);
+                    Console.Write(new string(' ', LeftPadding + SelectSymbol.Length) + Items[ElementIndex]);
                     ElementIndex++;
                     Console.CursorTop++;
                     Console.CursorLeft = OriginalPosition[0];
-                    Console.Write(new string(' ', padx) + symbol + items[ElementIndex]);
+                    Console.Write(new string(' ', LeftPadding) + SelectSymbol + Items[ElementIndex]);
                 }
 
-                if ((Key == ConsoleKey.W || Key == ConsoleKey.UpArrow) && ElementIndex > 0)
-                {
+                if ((Key == ConsoleKey.W || Key == ConsoleKey.UpArrow) && ElementIndex > 0) {
                     Console.CursorLeft = OriginalPosition[0];
-                    Console.Write(new string(' ', padx + symbol.Length) + items[ElementIndex]);
+                    Console.Write(new string(' ', LeftPadding + SelectSymbol.Length) + Items[ElementIndex]);
                     ElementIndex--;
                     Console.CursorTop--;
                     Console.CursorLeft = OriginalPosition[0];
-                    Console.Write(new string(' ', padx) + symbol + items[ElementIndex]);
+                    Console.Write(new string(' ', LeftPadding) + SelectSymbol + Items[ElementIndex]);
                 }
             }
         }
@@ -64,26 +58,22 @@ namespace BlackBox
             Console.Write(new string(' ', padx) + fieldName + new string(ch, len));
             Console.CursorLeft = OriginalPositionX + padx + fieldName.Length;
             string str = "";
-  
-            for (int i = 0; ;)
-            {
+
+            for (int i = 0; ;) {
                 ConsoleKeyInfo Key = Console.ReadKey(true);
-                if (Key.Key == ConsoleKey.Enter)
-                {
+                if (Key.Key == ConsoleKey.Enter) {
                     Console.CursorLeft = OriginalPositionX;
                     Console.CursorTop += 2;
                     if (ClearConsole) Console.Clear();
                     if (str != "") return str;
                     else return string.Empty;
                 }
-                if ((int)Key.KeyChar != 0 && !SpecialKeys.Contains(Key.Key) && i < len)
-                {
+                if ((int) Key.KeyChar != 0 && !SpecialKeys.Contains(Key.Key) && i < len) {
                     Console.Write(Key.KeyChar);
                     i++;
                     str += Key.KeyChar;
                 }
-                if (Key.Key == ConsoleKey.Backspace && i > 0)
-                {
+                if (Key.Key == ConsoleKey.Backspace && i > 0) {
                     i--;
                     str = str.Substring(0, str.Length - 1);
                     Console.CursorLeft--;
@@ -92,7 +82,7 @@ namespace BlackBox
                 }
             }
         }
-        public static void MenuIOData(string FilePath, string[] Columns, char Separator = ' ', int LeftPadding = 0, int Padding = 0, tripleDES Des = null) 
+        public static void MenuIOData(string FilePath, string[] Columns, char Separator = ' ', int LeftPadding = 0, int Padding = 0, tripleDES Des = null)
         {
             string[][] Items = GetItems(FilePath, Columns, Separator, Des);
             List<int> delete_indexes = new List<int>();
@@ -137,16 +127,7 @@ namespace BlackBox
                     Console.CursorLeft -= Items[Y][X].Length;
                 }
                 else if (key == ConsoleKey.Escape) {
-                    if (delete_indexes.Count != 0) {
-                        List<string[]> strs = new List<string[]>(Items);
-                        File.WriteAllText(FilePath, "");
-                        string tempData = String.Empty;
-                        for (int i = 0; i < Items.Length; i++) {
-                            if (!delete_indexes.Contains(i)) tempData += ArrayToLine(Items[i], ' ') + '\n';
-                        }
-                        if (Des == null) File.WriteAllText(FilePath, tempData);
-                        else Des.EncryptFile(Des.EncryptData(tempData), FilePath);
-                    }
+                    DeleteItems(FilePath, delete_indexes, Des);
                     break;
                 }
                 else if (key == ConsoleKey.UpArrow && Y > 0) {
@@ -195,12 +176,70 @@ namespace BlackBox
             }
             Console.Clear();
         }
+
+        public static void SetWindowSize(int Wmin, int Wmax, int Hmin, int Hmax, int LeftPadding = 0)
+        {
+            int Width =  Console.WindowWidth;
+            int Height = Console.WindowHeight;
+            Console.CursorVisible = false;
+            int Len = Hmax.ToString().Length;
+            string W = ValueValidator(Width.ToString(), Len, '0');
+            string H = ValueValidator(Height.ToString(), Len, '0');
+            
+            Console.WriteLine(new string(' ', LeftPadding) + $"Width:  ← {W} →");
+            Console.Write(new string(' ', LeftPadding) + $"Height: ↑ {H} ↓");
+
+            Console.CursorLeft -= 2;
+            Console.CursorTop -= 1;
+            while (true) {
+                ConsoleKey Key = Console.ReadKey(true).Key;
+                if (Key == ConsoleKey.RightArrow && Width < Wmax) {
+                    Console.CursorLeft -= Len;
+                    Width++;
+                    W = ValueValidator(Width.ToString(), Len, '0');
+                    Console.Write(W);
+                }
+                if (Key == ConsoleKey.LeftArrow && Width > Wmin) {
+                    Console.CursorLeft -= Len;
+                    Width--;
+                    W = ValueValidator(Width.ToString(), Len, '0');
+                    Console.Write(W);
+                }
+
+                if (Key == ConsoleKey.DownArrow && Height < Hmax) {
+                    Console.CursorLeft -= Len;
+                    Console.CursorTop++;
+                    Height++;
+                    H = ValueValidator(Height.ToString(), Len, '0');
+                    Console.Write(H);
+                    Console.CursorTop--;
+                }
+                if (Key == ConsoleKey.UpArrow && Height > Hmin) {
+                    Console.CursorLeft -= Len;
+                    Console.CursorTop++;
+                    Height--;
+                    H = ValueValidator(Height.ToString(), Len, '0');
+                    Console.Write(H);
+                    Console.CursorTop--;
+                }
+                if (Key == ConsoleKey.Escape) {
+                    break;
+                }
+                Console.WindowWidth = Width;
+                Console.WindowHeight = Height;
+            }
+            Console.Clear();
+        }
+
+        static string ValueValidator(string Value, int Length, char C)
+        {
+            while (Value.Length < Length) Value = C + Value;
+            return Value;
+        }
+
         private static string[][] GetItems(string FilePath, string[] Columns, char Separator, tripleDES Des = null)
         {
-            string[] Data;
-            if (Des != null) Data = Des.DecryptFile(FilePath).Split('\n');
-            else Data = File.ReadAllText(FilePath).Split('\n');
-
+            string[] Data = Des != null ? Des.DecryptFile(FilePath).Split('\n') : File.ReadAllLines(FilePath);
             string[][] Items = new string[Data.Length][];
             for (int i = 0; i < Items.Length; i++) {
                 string[] temp = Data[i].Split(Separator);
@@ -216,6 +255,20 @@ namespace BlackBox
             }
             return Items;
         }
+        private static void DeleteItems(string FilePath, List<int> Indexes, tripleDES Des = null)
+        {
+            if (Indexes.Count != 0) {
+                string[] oldData = Des != null ? Des.DecryptFile(FilePath).Split('\n') : File.ReadAllLines(FilePath);
+                string newData = String.Empty;
+                for (int i = 0; i < oldData.Length; i++) if (!Indexes.Contains(i) && oldData[i] != "\n") newData += oldData[i] + '\n';
+                while (newData.Length != 0) {
+                    if (newData[newData.Length - 1] == '\n') newData = newData.Substring(0, newData.Length - 1);
+                    else break;
+                }
+                if (Des != null) Des.EncryptFile(newData, FilePath);
+                else File.WriteAllLines(FilePath, newData.Split('\n'));
+            }
+        }
 
         static public void WriteColor(string Value, ConsoleColor Color)
         {
@@ -226,13 +279,6 @@ namespace BlackBox
         }
         static public void WriteRed(string Value) => WriteColor(Value, ConsoleColor.Red);
         static public void WriteGreen(string Value) => WriteColor(Value, ConsoleColor.Green);
-        static public void WriteGray(string Value) => WriteColor(Value, ConsoleColor.Gray);
-
-        static string ArrayToLine(string[] arr, char Separator)
-        {
-            string str = String.Empty;
-            for (int i = 0; i < arr.Length; i++) str += arr[i] + Separator;
-            return str;
-        }
+        static public void WriteGray(string Value) => WriteColor(Value, ConsoleColor.DarkGray);
     }
 }
