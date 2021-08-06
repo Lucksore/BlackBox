@@ -51,6 +51,7 @@ namespace BlackBox
                 }
             }
         }
+        
         public static string ConsoleLoginForm(string fieldName, int len, char ch = ' ', int padx = 0, bool ClearConsole = false)
         {
             Console.CursorVisible = false;
@@ -82,6 +83,7 @@ namespace BlackBox
                 }
             }
         }
+        
         public static void MenuIOData(string FilePath, string[] Columns, char Separator = ' ', int LeftPadding = 0, int Padding = 0, tripleDES Des = null)
         {
             string[][] Items = GetItems(FilePath, Columns, Separator, Des);
@@ -225,8 +227,21 @@ namespace BlackBox
                 if (Key == ConsoleKey.Escape) {
                     break;
                 }
-                Console.WindowWidth = Width;
-                Console.WindowHeight = Height;
+
+                try {
+                    Console.WindowWidth = Width;
+                    Console.WindowHeight = Height;
+                }
+                catch (ArgumentOutOfRangeException e) {
+                    Console.CursorTop += 2;
+                    Console.CursorLeft = 0;
+                    WriteRed($"{new string(' ', LeftPadding)}Argument out of range ({e.ParamName}).");
+                    Console.CursorTop -= 2;
+                    Console.CursorLeft = 0;
+                    Console.CursorLeft += 13 + LeftPadding;
+                    if (e.ParamName == "height") Height--;
+                    if (e.ParamName == "width") Width--;
+                }
             }
             Console.Clear();
         }
@@ -255,6 +270,7 @@ namespace BlackBox
             }
             return Items;
         }
+        
         private static void DeleteItems(string FilePath, List<int> Indexes, tripleDES Des = null)
         {
             if (Indexes.Count != 0) {

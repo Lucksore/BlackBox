@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-
+using System.Xml;
 using System.Text;
 using System.Threading;
 using System.Collections;
@@ -12,12 +12,12 @@ namespace BlackBox
 {
     class BlackBox
     {
-        static string KeyDES = Environment.UserName;
         static string UsersFile = "Users";
         static string UsersDir = "UsersDir";
         static string CurrentUser;
         static string Padding = "\t";
         static string FileFormat = ".bin";
+        static string SettingsFile = "config.xml";
 
         static List<string> UserList;
         static List<string> UserData;
@@ -28,12 +28,13 @@ namespace BlackBox
         static int LoginLen = 10;
         static int PasswordLen = 10;
 
-        static tripleDES Des = new tripleDES(KeyDES);
+        static ConfigureFileXML Config = new ConfigureFileXML(SettingsFile);
+        static tripleDES Des = new tripleDES(Config.UserName);
+        
 
         [STAThread]
         static void Main()
         {
-            
             Configure();
             UserSelectMenu();
             UserInfoMenu();
@@ -43,7 +44,10 @@ namespace BlackBox
         {
             Console.InputEncoding = Encoding.UTF8;
             Console.OutputEncoding = Encoding.UTF8;
-            Console.Title = "BlackBox";
+            Console.WindowWidth = Config.Width;
+            Console.WindowHeight = Config.Height;
+            Console.Title = Config.Title;
+            
             if (!File.Exists(UsersFile)) File.WriteAllText(UsersFile, "");
             if (!Directory.Exists(UsersDir)) Directory.CreateDirectory(UsersDir);
 
@@ -54,8 +58,8 @@ namespace BlackBox
                 UserList = new List<string>();
                 RegisterFirst();
             }
-            File.WriteAllText("text.txt", data);
         }
+
         static void UpdateUserList()
         {
             if (!File.Exists(CurrentUser)) File.WriteAllText(CurrentUser, "");
@@ -198,7 +202,8 @@ namespace BlackBox
                     if (deleted) break;
                 }
                 if (Answer == Answers.SettingsAnswers[1]) ChangeWindowSize();
-                if (Answer == Answers.SettingsAnswers[2]) break;
+                if (Answer == Answers.SettingsAnswers[2]) ChangeTitle();
+                if (Answer == Answers.SettingsAnswers[3]) break;
             }
 
             if (deleted) UserSelectMenu();
@@ -228,7 +233,7 @@ namespace BlackBox
                 if (File.Exists(CurrentUser)) File.Delete(CurrentUser);
                 CurrentUser = String.Empty;
                 UserList.Remove(info);
-                Des.SetKey(Environment.UserName);
+                Des.SetKey(Config.UserName);
                 if (UserList.Count == 0) File.WriteAllText(UsersFile, "");
                 else Des.EncryptFile(UserList.ToArray(), UsersFile);
 
@@ -244,10 +249,17 @@ namespace BlackBox
         }
         static void ChangeWindowSize()
         {
-            int value = Console.WindowWidth;
             Console.WriteLine();
-            SetWindowSize(40, 135, 10, 100, PaddingInt);
+            SetWindowSize(40, 200, 10, 100, PaddingInt);
+            Config.SetSize(Console.WindowHeight, Console.WindowWidth);
+            
         }
-        
+        static void ChangeTitle()
+        {
+            Console.WriteLine();
+            Console.Title = ConsoleLoginForm("Input new title: ", 20, '_', PaddingInt);
+            Config.SetTitle(Console.Title);
+            Console.Clear();
+        }
     }
 }
