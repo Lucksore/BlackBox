@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml;
+using System.Collections.Generic;
 
 namespace BlackBox
 {
@@ -17,29 +18,17 @@ namespace BlackBox
         public ConfigureFileXML(string FilePath)
         {
             this.FilePath = FilePath;
-            if (File.Exists(FilePath)) doc.Load(FilePath);
-            else {
-                XmlDeclaration declaration = doc.CreateXmlDeclaration("1.0", "utf-8", null);
-                XmlElement Root = doc.CreateElement("Settings");
-                XmlElement Width = doc.CreateElement("Width");
-                XmlElement Height = doc.CreateElement("Height");
-                XmlElement Title = doc.CreateElement("Title");
-                XmlElement UserName = doc.CreateElement("UserName");
+            if (File.Exists(FilePath)) {
+                try {
+                    doc.Load(FilePath);
+                }
+                catch (XmlException) {
+                    File.WriteAllText(FilePath, "");
+                }
 
-                Width.InnerText = Console.WindowWidth.ToString();
-                Height.InnerText = Console.WindowHeight.ToString();
-                Title.InnerText = "BlackBox";
-                UserName.InnerText = Environment.UserName;
-
-                Root.AppendChild(Width);
-                Root.AppendChild(Height);
-                Root.AppendChild(Title);
-                Root.AppendChild(UserName);
-
-                doc.AppendChild(declaration);
-                doc.AppendChild(Root);
-                doc.Save(FilePath);
+                if (!FileValidator()) CreateNewXML();
             }
+            else CreateNewXML();
 
             InitializeValues();
         }
@@ -50,6 +39,43 @@ namespace BlackBox
             Height = int.Parse(doc.GetElementsByTagName("Height")[0].InnerText);
             Title = doc.GetElementsByTagName("Title")[0].InnerText;
             UserName = doc.GetElementsByTagName("UserName")[0].InnerText;
+        }
+
+        public void CreateNewXML()
+        {
+            doc.RemoveAll();
+            XmlDeclaration declaration = doc.CreateXmlDeclaration("1.0", "utf-8", null);
+            XmlElement Root = doc.CreateElement("Settings");
+
+            XmlElement Width = doc.CreateElement("Width");
+            XmlElement Height = doc.CreateElement("Height");
+            XmlElement Title = doc.CreateElement("Title");
+            XmlElement UserName = doc.CreateElement("UserName");
+
+            Width.InnerText = Console.WindowWidth.ToString();
+            Height.InnerText = Console.WindowHeight.ToString();
+            Title.InnerText = "BlackBox";
+            UserName.InnerText = Environment.UserName;
+
+            Root.AppendChild(Width);
+            Root.AppendChild(Height);
+            Root.AppendChild(Title);
+            Root.AppendChild(UserName);
+
+            doc.AppendChild(declaration);
+            doc.AppendChild(Root);
+            doc.Save(FilePath);
+        }
+
+        public bool FileValidator()
+        {
+            if (doc.InnerXml == "") return false;
+            XmlElement root = doc.DocumentElement;
+            if (root == null) return false;
+            List<string> NodeNames = new List<string>() {"Width", "Height", "Title", "UserName"};
+            foreach (XmlNode node in root.ChildNodes) NodeNames.Remove(node.Name);
+            if (NodeNames.Count != 0) return false;
+            return true;
         }
 
         public void SetWidth(int Value)

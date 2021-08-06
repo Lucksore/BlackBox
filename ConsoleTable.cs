@@ -4,12 +4,12 @@ using System.IO;
 using System.Threading;
 using static System.Windows.Forms.Clipboard;
 
-
 namespace BlackBox
 {
     static class TableMethods
     {
         static public List<ConsoleKey> SpecialKeys = new List<ConsoleKey>{ ConsoleKey.Backspace, ConsoleKey.Tab, ConsoleKey.Spacebar };
+        public delegate void ConsoleDelegate(int x, int y);
 
         public static string VerticalSelectMenu(string[] Items, int LeftPadding = 0, string SelectSymbol = " --> ")
         {
@@ -179,7 +179,7 @@ namespace BlackBox
             Console.Clear();
         }
 
-        public static void SetWindowSize(int Wmin, int Wmax, int Hmin, int Hmax, int LeftPadding = 0)
+        public static void SetWindowSize(int Wmin, int Wmax, int Hmin, int Hmax, ConsoleDelegate consoleDelegate = null, int LeftPadding = 0)
         {
             int Width =  Console.WindowWidth;
             int Height = Console.WindowHeight;
@@ -224,13 +224,11 @@ namespace BlackBox
                     Console.Write(H);
                     Console.CursorTop--;
                 }
-                if (Key == ConsoleKey.Escape) {
-                    break;
-                }
+                if (Key == ConsoleKey.Escape) break;
+                
 
                 try {
-                    Console.WindowWidth = Width;
-                    Console.WindowHeight = Height;
+                    if (consoleDelegate != null) consoleDelegate(Height, Width);
                 }
                 catch (ArgumentOutOfRangeException e) {
                     Console.CursorTop += 2;

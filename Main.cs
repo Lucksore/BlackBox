@@ -1,9 +1,7 @@
 ﻿using System;
 using System.IO;
-using System.Xml;
 using System.Text;
 using System.Threading;
-using System.Collections;
 using System.Collections.Generic;
 
 using static BlackBox.TableMethods;
@@ -17,7 +15,6 @@ namespace BlackBox
         static string CurrentUser;
         static string Padding = "\t";
         static string FileFormat = ".bin";
-        static string SettingsFile = "config.xml";
 
         static List<string> UserList;
         static List<string> UserData;
@@ -28,10 +25,9 @@ namespace BlackBox
         static int LoginLen = 10;
         static int PasswordLen = 10;
 
-        static ConfigureFileXML Config = new ConfigureFileXML(SettingsFile);
+        static ConfigureFileXML Config = new ConfigureFileXML("config.xml");
         static tripleDES Des = new tripleDES(Config.UserName);
         
-
         [STAThread]
         static void Main()
         {
@@ -59,7 +55,7 @@ namespace BlackBox
                 RegisterFirst();
             }
         }
-
+        
         static void UpdateUserList()
         {
             if (!File.Exists(CurrentUser)) File.WriteAllText(CurrentUser, "");
@@ -67,6 +63,7 @@ namespace BlackBox
             if (Data == String.Empty) UserData = new List<string>();
             else UserData = new List<string>(Data.Split('\n'));
         }
+        
         static void RegisterFirst()
         {
             Console.WriteLine($"\n{Padding}No users. Register a new one?");
@@ -75,6 +72,7 @@ namespace BlackBox
             else Environment.Exit(0);
             
         }
+        
         static void RegisterNew()
         {
             Console.Clear();
@@ -108,6 +106,7 @@ namespace BlackBox
             }
             Console.Clear();
         }
+        
         static void UserSelectMenu() {
             string Answer = String.Empty;
             while (true) {
@@ -118,6 +117,7 @@ namespace BlackBox
                 if (Answer == Answers.MenuAnswers[2]) Environment.Exit(0);
             } 
         }
+        
         static bool LogIn() {
             string login = "";
             string password = "";
@@ -138,6 +138,7 @@ namespace BlackBox
             Console.Clear();
             return false;
         }
+        
         static void UserInfoMenu() {
             
             Des.SetKey(CurrentUser);
@@ -153,6 +154,7 @@ namespace BlackBox
                 if (Answer == Answers.ProfileAnswers[3]) Environment.Exit(0);
             }
         }
+        
         static void ShowData() 
         {
             if (UserData.Count == 0) {
@@ -167,6 +169,7 @@ namespace BlackBox
                 Console.Clear();
             }
         }
+        
         static void AddData()
         {
             Console.WriteLine();
@@ -190,6 +193,7 @@ namespace BlackBox
             }
 
         }
+        
         static void SettingsMenu()
         {
             string Answer = String.Empty;
@@ -208,6 +212,7 @@ namespace BlackBox
 
             if (deleted) UserSelectMenu();
         }
+        
         static bool DeleteUser()
         {
             string login = "";
@@ -247,13 +252,19 @@ namespace BlackBox
             }
             return false;
         }
+        
         static void ChangeWindowSize()
         {
             Console.WriteLine();
-            SetWindowSize(40, 200, 10, 100, PaddingInt);
-            Config.SetSize(Console.WindowHeight, Console.WindowWidth);
-            
+            SetWindowSize(30, 200, 10, 200, delegate (int h, int w)
+            {
+                Console.WindowHeight = h;
+                Console.WindowWidth = w;
+                Config.SetSize(h, w);
+            },
+            PaddingInt);
         }
+        
         static void ChangeTitle()
         {
             Console.WriteLine();
