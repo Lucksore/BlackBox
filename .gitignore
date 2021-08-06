@@ -1,9 +1,4 @@
 bin
-<<<<<<< HEAD
 obj
-App.config
-BB1.csproj.user
 .vs
-=======
-obj
->>>>>>> 21ed30f62eff4ebd2961517242b21aa07ae0723e
+

@@ -15,7 +15,6 @@ namespace BlackBox
             des.Mode = CipherMode.ECB;
             des.Padding = PaddingMode.PKCS7;
         }
-
         public byte[] EncryptData(byte[] Data) => des.CreateEncryptor().TransformFinalBlock(Data, 0, Data.Length);
         public byte[] DecryptData(byte[] Data) => des.CreateDecryptor().TransformFinalBlock(Data, 0, Data.Length);
         public byte[] EncryptData(string Data) => EncryptData(E.GetBytes(Data));

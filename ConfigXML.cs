@@ -8,7 +8,6 @@ namespace BlackBox
     class ConfigureFileXML
     {
         public XmlDocument doc = new XmlDocument();
-
         readonly string FilePath;
         public int Width;
         public int Height;

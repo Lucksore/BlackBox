@@ -207,7 +207,7 @@ namespace BlackBox
                 }
                 if (Answer == Answers.SettingsAnswers[1]) ChangeWindowSize();
                 if (Answer == Answers.SettingsAnswers[2]) ChangeTitle();
-                if (Answer == Answers.SettingsAnswers[3]) break;
+                if (Answer == Answers.SettingsAnswers[4]) break;
             }
 
             if (deleted) UserSelectMenu();
