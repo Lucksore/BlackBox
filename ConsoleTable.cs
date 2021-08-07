@@ -284,6 +284,15 @@ namespace BlackBox
             }
         }
 
+        public static void ShowMessage(string Value, int LeftPadding = 0)
+        {
+            string[] lines = Value.Split('\n');
+            Console.CursorVisible = false;
+            for (int i = 0; i < lines.Length; i++) Console.WriteLine(new string(' ', LeftPadding) + lines[i]);
+            Console.ReadLine();
+            Console.Clear();
+        }
+
         static public void WriteColor(string Value, ConsoleColor Color)
         {
             ConsoleColor OldColor = Console.ForegroundColor;

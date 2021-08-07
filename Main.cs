@@ -207,6 +207,7 @@ namespace BlackBox
                 }
                 if (Answer == Answers.SettingsAnswers[1]) ChangeWindowSize();
                 if (Answer == Answers.SettingsAnswers[2]) ChangeTitle();
+                if (Answer == Answers.SettingsAnswers[3]) ShowInfo();
                 if (Answer == Answers.SettingsAnswers[4]) break;
             }
 
@@ -271,6 +272,13 @@ namespace BlackBox
             Console.Title = ConsoleLoginForm("Input new title: ", 20, '_', PaddingInt);
             Config.SetTitle(Console.Title);
             Console.Clear();
+        }
+
+        static void ShowInfo()
+        {
+            Console.Clear();
+            Console.WriteLine();
+            ShowMessage(Answers.Info, PaddingInt);
         }
     }
 }
