@@ -3,7 +3,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Collections.Generic;
-
+using System.Windows.Forms;
 using static BlackBox.TableMethods;
 
 namespace BlackBox
@@ -15,6 +15,7 @@ namespace BlackBox
         static string CurrentUser;
         static string Padding = "\t";
         static string FileFormat = ".bin";
+        static string MainWindowPassword = "~~~";
 
         static List<string> UserList;
         static List<string> UserData;
@@ -22,12 +23,19 @@ namespace BlackBox
 
         static int WaitTime = 1000;
         static int PaddingInt = 8;
-        static int LoginLen = 10;
-        static int PasswordLen = 10;
+        static int LoginLen = 30;
+        static int PasswordLen = 30;
 
-        static ConfigureFileXML Config = new ConfigureFileXML("config.xml");
-        static tripleDES Des = new tripleDES(Config.UserName);
-        
+        static XmlDoc Config = new XmlDoc("config.xml");
+        static tripleDES Des = new tripleDES(MainWindowPassword);
+
+        static Dictionary<string, string> Parameters = new Dictionary<string, string>() {
+            { "Width", Console.WindowWidth.ToString() },
+            { "Height", Console.WindowHeight.ToString() },
+            { "Title", "BlackBox" }
+        };
+
+
         [STAThread]
         static void Main()
         {
@@ -38,12 +46,32 @@ namespace BlackBox
         
         static void Configure()
         {
+            if (!File.Exists("config.xml")) Config.CreateDocument(Parameters);
+            else {
+                if (!Config.LoadDocument()) Config.CreateDocument(Parameters);
+            }
+            Config.LoadDocument();
+
+            Parameters = Config.GetParameters();
             Console.InputEncoding = Encoding.UTF8;
             Console.OutputEncoding = Encoding.UTF8;
-            Console.WindowWidth = Config.Width;
-            Console.WindowHeight = Config.Height;
-            Console.Title = Config.Title;
-            
+            try {
+                Console.WindowWidth = int.Parse(Parameters["Width"]);
+                Console.WindowHeight = int.Parse(Parameters["Height"]);
+                Console.Title = Parameters["Title"];
+            }
+            catch (KeyNotFoundException e) {
+                Console.WriteLine($"\n{Padding}{e.Message} Try to reset \"config.xml\" file.\n\n{Padding}Reset?");
+                
+                string answer = VerticalSelectMenu(Answers.ShortAnswers, PaddingInt);
+                if (answer == Answers.ShortAnswers[0]) {
+                    File.Delete("config.xml");
+                    Application.Restart();
+                    Environment.Exit(0);
+                }
+                else Environment.Exit(0);
+            }
+
             if (!File.Exists(UsersFile)) File.WriteAllText(UsersFile, "");
             if (!Directory.Exists(UsersDir)) Directory.CreateDirectory(UsersDir);
 
@@ -239,7 +267,7 @@ namespace BlackBox
                 if (File.Exists(CurrentUser)) File.Delete(CurrentUser);
                 CurrentUser = String.Empty;
                 UserList.Remove(info);
-                Des.SetKey(Config.UserName);
+                Des.SetKey(MainWindowPassword);
                 if (UserList.Count == 0) File.WriteAllText(UsersFile, "");
                 else Des.EncryptFile(UserList.ToArray(), UsersFile);
 
@@ -261,7 +289,8 @@ namespace BlackBox
             {
                 Console.WindowHeight = h;
                 Console.WindowWidth = w;
-                Config.SetSize(h, w);
+                Config.ChangeNodeValue("Width", w.ToString());
+                Config.ChangeNodeValue("Height", h.ToString());
             },
             PaddingInt);
         }
@@ -270,7 +299,7 @@ namespace BlackBox
         {
             Console.WriteLine();
             Console.Title = ConsoleLoginForm("Input new title: ", 20, '_', PaddingInt);
-            Config.SetTitle(Console.Title);
+            Config.ChangeNodeValue("Title", Console.Title);
             Console.Clear();
         }
 
@@ -280,5 +309,16 @@ namespace BlackBox
             Console.WriteLine();
             ShowMessage(Answers.Info, PaddingInt);
         }
+    }
+
+    class Answers
+    {
+        public static string[] ShortAnswers = new string[] { "Yes", "No" };
+        public static string[] MenuAnswers = new string[] { "Log in", "Register new", "Exit" };
+        public static string[] ProfileAnswers = new string[] { "Show All", "Add new", "Settings", "Exit" };
+        public static string[] SettingsAnswers = new string[] { "Delete user", "Change size", "Change title", "Info", "Return" };
+        public static string[] Columns = new string[] { "Name", "Login", "Password" };
+
+        public static string Info = "Version 1.0\n2021 Russia, Moscow";
     }
 }

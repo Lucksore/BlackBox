@@ -250,13 +250,13 @@ namespace BlackBox
             return Value;
         }
 
-        private static string[][] GetItems(string FilePath, string[] Columns, char Separator, tripleDES Des = null)
+        private static string[][] GetItems(string FilePath, string[] ColumnsNames, char Separator, tripleDES Des = null)
         {
             string[] Data = Des != null ? Des.DecryptFile(FilePath).Split('\n') : File.ReadAllLines(FilePath);
             string[][] Items = new string[Data.Length][];
             for (int i = 0; i < Items.Length; i++) {
                 string[] temp = Data[i].Split(Separator);
-                int delta = Columns.Length - temp.Length;
+                int delta = ColumnsNames.Length - temp.Length;
                 if (delta > 0) {
                     Items[i] = new string[temp.Length + delta];
                     for (int y = 0; y < temp.Length + delta; y++) {
@@ -289,7 +289,10 @@ namespace BlackBox
             string[] lines = Value.Split('\n');
             Console.CursorVisible = false;
             for (int i = 0; i < lines.Length; i++) Console.WriteLine(new string(' ', LeftPadding) + lines[i]);
-            Console.ReadLine();
+            while (true) {
+                ConsoleKey key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.Enter || key == ConsoleKey.Escape) break;
+            }
             Console.Clear();
         }
 

@@ -65,11 +65,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Answers.cs" />
-    <Compile Include="ConfigXML.cs" />
     <Compile Include="ConsoleTable.cs" />
     <Compile Include="tripleDES.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="XmlDoc.cs" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7.2">
